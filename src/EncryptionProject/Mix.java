@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 // TODO: 4/14/2016 linked list of linked list
 // TODO: 4/14/2016 java doc
-// TODO: 4/14/2016 error message
+// TODO: 4/14/2016 error message test
 // TODO: 4/14/2016 junit
 /*****************************************************************
  Class used to mix message implements IMix
