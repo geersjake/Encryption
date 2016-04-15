@@ -13,8 +13,9 @@ import java.util.Scanner;
 // TODO: 4/14/2016 java doc
 // TODO: 4/14/2016 error message test
 // TODO: 4/14/2016 junit
+
 /*****************************************************************
- Class used to mix message implements IMix
+ Class used to mix/encrypt message implements IMix.
 
  @author Jake Geers
  @version 4/3/2016
@@ -34,9 +35,9 @@ public class Mix implements IMix {
     private ArrayList<LinkedList> clipBoards;
 
 
-
     /*****************************************************************
      Mix Constructor for instantiating global variables
+
      @throws // TODO: 4/11/2016
      *****************************************************************/
     public Mix() {
@@ -50,86 +51,156 @@ public class Mix implements IMix {
     /*****************************************************************
      Implementation of setInitalMessage, sets the message to be mixed
      based on user input
+
      @param message the string to become the initial message
-     @throws // TODO: 4/11/2016
      *****************************************************************/
     @Override
     public void setInitialMessage(String message) {
         for (int i = 0; i < message.length(); i++) {
             this.message.add(message.charAt(i)); //separating into char
         }
+        if (message.length() == 0){
+            System.out.print("Please enter a message:");
+            setInitialMessage(scanner.nextLine());
+        }
     }
 
     /*****************************************************************
-     Implementation of proccessCommand. Executes the given command
+     Implementation of processCommand. Executes the given command
+
      @param command the user defined command
      @return the message after executing the command
-     @throws // TODO: 4/11/2016
+     @throws RuntimeException
+     @throws IOException
      *****************************************************************/
     @Override
     public String processCommand(String command) {
         String[] cmd = command.split("\\s+"); //separating input
+
         switch (cmd[0]) {
             case "q": //quit
-                StringSelection selection = new StringSelection(message.display());
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                //accessing system clipboard
+                StringSelection selection;
+                selection = new StringSelection(message.display());
+                Clipboard clipboard = Toolkit.getDefaultToolkit()
+                        .getSystemClipboard();
                 clipboard.setContents(selection, selection);
 
-
-                System.out.println("Quitting. Final Message is:\n" + message.display());
+                //printing final message
+                System.out.println("Quitting. Final Message is:\n" +
+                        message.display());
                 System.exit(0);
                 break;
             case "help": //help
-                System.out.println("List of available commands are: ");
+                System.out.println("List of available commands are:");
+                System.out.printf("\tCopy: c start end clipBoardNum\n");
+                System.out.printf("\tPaste: p afterNum clipBoardNum\n");
+                System.out.printf("\tInsert: a char afterNum\n");
+                System.out.printf("\tRemove all: r char\n");
+                System.out.printf("\tSave: s\n");
+                System.out.printf("\tQuit: q\n");
                 break;
-            case "a": //insert // TODO: 4/11/2016 insertAtTop() for -1
-                int index = Integer.parseInt(cmd[2]);
-
-                if (index == -1) {
-                    message.addAtTop(cmd[1].charAt(0));
-                }else {
-                    message.insertAfter(index, cmd[1].charAt(0));
+            case "a": //insert // TODO: 4/11/2016  letter first then num
+                if (cmd.length != 3) { //ensuring proper length
+                    System.out.println("Insert has three param");
+                    break;
                 }
-                execudedCmds.add(command);
+                if (cmd[1].toString().length() > 1){ //checking char
+                    System.out.println("Insert one char only");
+                    break;
+                }
+                //checking valid size
+                if (cmd[2].toString().length() > message.getSize()){
+                    System.out.println("Position is not valid");
+                    break;
+                }
+
+                try { //ensuring position is a int
+                    int index = Integer.parseInt(cmd[2]);
+                    if (index >= message.getSize() || index < -1){
+                        System.out.println(index +" is not a valid position");
+                        break;
+                    }
+                    if (index == -1) { //-1 to insert at top
+                        message.addAtTop(cmd[1].charAt(0));
+                    }
+                    else if (index < -1){
+                        System.out.println("Improper bounds");
+                        break;
+                    }
+                    else {
+                        message.insertAfter(index, cmd[1].charAt(0));
+                    }
+                    execudedCmds.add(command); //adding cmd to list
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Position must be an int");
+                    break;
+                }
                 break;
             case "r": //remove
-                char str = cmd[1].charAt(0);
-
-                int i = message.getSize();
-                while (i > 0){
-                    i--;
-                    if (message.get(i).getData().equals(cmd[1].charAt(0))) {
-                        execudedCmds.add("r " + cmd[1].charAt(0) + " " + ((i)));
-                    }
+                if (cmd.length != 2) { //ensuring proper length
+                    System.out.println("Remove has 2 param");
+                    break;
+                }
+                if (cmd[1].toString().length() > 1){ //checking char
+                    System.out.println("Remove one char only");
+                    break;
                 }
 
+                char str = cmd[1].charAt(0); //casting char to remove
+                int i = message.getSize(); //counter
+
+                while (i > 0) {
+                    i--;
+                    //conditional checking for equivalence at each
+                    //position. If eqiv then adds position to
+                    //list of commands
+                    if (message.get(i).getData().equals(cmd[1].charAt(0)))
+                        execudedCmds.add("r " + cmd[1].charAt(0) +
+                                " " + ((i)));
+
+                }
+                //removing all occurences
                 message.removeAll(str);
                 break;
-            case "p": //paste   // TODO: 4/14/2016 try catch p 8
-                paste(cmd[1], cmd[2]);
-                int clipNum = Integer.parseInt(cmd[2]);
-                execudedCmds.add("p :" + clipBoards.get(clipNum).display() + ":" + cmd[1]);
+            case "p": //paste
+                if (cmd.length != 3) { //ensuring proper length
+                    System.out.println("Paste has three param");
+                    break;
+                }
+                if (paste(cmd[1], cmd[2])) { //checking paste condition
+                int clipNum = Integer.parseInt(cmd[2]); //casting
+                //adding to command list
+                    execudedCmds.add("p :" +
+                            clipBoards.get(clipNum).display() +
+                            ":" + cmd[1]);
+                }
                 break;
             case "c": //copy
-                int start = Integer.parseInt(cmd[1].trim());
-                int end = Integer.parseInt(cmd[2].trim());
-                if (end < start || end > message.getSize()-1){
-                    System.out.println("Improper End Bound");
-                    break;
-                }
-                if (start < 0 || start > end){
-                    System.out.println("Improper Starting Bound");
-                    break;
-                }
                 try {
+                    int start = Integer.parseInt(cmd[1].trim());
+                    int end = Integer.parseInt(cmd[2].trim());
+
+                    //ensuring bounds are valid
+                    if (end < start || end > message.getSize() - 1) {
+                        System.out.println("Improper End Bound");
+                        break;
+                    }
+                    if (start < 0 || start > end) {
+                        System.out.println("Improper Starting Bound");
+                        break;
+                    }
+                    //calling copy() if bounds are valid
                     copy(cmd[1], cmd[2], cmd[3]);
-                } catch (ArrayIndexOutOfBoundsException e){
-                    System.out.println("Please format copy command properly");
+
+                } catch (RuntimeException e) {
+                    System.out.println("Please format cmd properly");
                 }
                 break;
             case "s": //save
                 System.out.println("File Saved");
-                save();
+                save(); //method to write cmd list
                 break;
             default: //default for any unrecognized commands
                 System.out.println("Please enter a valid command");
@@ -141,11 +212,12 @@ public class Mix implements IMix {
     /*****************************************************************
      Overrides object toString to out put a formatted string string
      which includes message and numbers
-     @throws // TODO: 4/11/2016
+
      @return result, a two line string
+     @throws IndexOutOfBoundsException
      *****************************************************************/
     public String toString() {
-        String index = "";
+        String index = ""; //creating parts to concat
         String result;
         String msg = "";
 
@@ -163,8 +235,9 @@ public class Mix implements IMix {
     }
 
     /*****************************************************************
-     Returns the unformatted message as a string. Used in unMixTest
-     @throws // TODO: 4/14/2016
+     Returns the unformatted message as a string. Used in various
+     methods to use message in an unformatted setting
+
      @return message
      *****************************************************************/
     public String getMessage() {
@@ -174,7 +247,9 @@ public class Mix implements IMix {
     /*****************************************************************
      Main method for encrypting the message. Promps the user and sends
      and sends commands to processCommand()
-     @throws // TODO: 4/11/2016
+
+     @throws RuntimeException
+     @throws IOException
      *****************************************************************/
     public void mixture() {
         System.out.printf("Enter initial message you wish" +
@@ -195,35 +270,54 @@ public class Mix implements IMix {
     /*****************************************************************
      Method which is called by proccessCommand, pastes a clipboard's
      content after the specified location
-     @param position after which to paste
+
+     @param position      after which to paste
      @param pClipboardNum the clipboard id
-     @throws // TODO: 4/11/2016
+     @return isValid command
+     @throws RuntimeException
      *****************************************************************/
-    public void paste(String position, String pClipboardNum) {
-        int pos = Integer.parseInt(position);
-        int clipBoardNum = Integer.parseInt(pClipboardNum);
-
+    public boolean paste(String position, String pClipboardNum) {
+        boolean isValid = false;
         try {
+            int pos = Integer.parseInt(position); //getting int pos
+            int clipBoardNum = Integer.parseInt(pClipboardNum);
+
+            //no signifcance other than to throw an exception
             clipBoards.get(clipBoardNum);
-        } catch (IndexOutOfBoundsException e){
-            System.out.println("That clip board does not have any contents");
-            return;
+
+            //informing user that specified clipboard is empty
+            if (clipBoards.get(clipBoardNum).get(0)==null){
+                System.out.println("That clipboard is empty");
+            }
+
+            //appending message for ever char in the list
+            for (int i = 0; i < clipBoards.get
+                    (clipBoardNum).getSize(); i++)
+            {
+                if (pos == -1){ //adding to top
+                    message.addAtTop(clipBoards.get(clipBoardNum)
+                            .get(i).getData().toString().charAt(0));
+                }else { //adding after position
+                    message.insertAfter(pos, clipBoards.get(clipBoardNum)
+                            .get(i).getData().toString().charAt(0));
+                }
+                pos++;
+                isValid =true;
+            }
+        } catch (RuntimeException e){
+            System.out.println("Format for paste cmd is incorrect");
         }
-        for (int i = 0; i < clipBoards.get(clipBoardNum).getSize() ; i++) {
-            message.insertAfter(pos, clipBoards.get(clipBoardNum).get(i).getData().toString().charAt(0));
-            pos++;
-        }
 
-
-
+        return isValid;
     }
 
     /*****************************************************************
      Copies the contents of message on the specific interval to a
      clipboard in clipBoardList. Creates a new clipboard if one does
      not exist, overwrites clipboard otherwise.
-     @param pFirst first char to be copied
-     @param pLast last char to be copied
+
+     @param pFirst        first char to be copied
+     @param pLast         last char to be copied
      @param pClipBoardNum clipboard identifier
      @throws IndexOutOfBoundsException
      *****************************************************************/
@@ -232,6 +326,10 @@ public class Mix implements IMix {
         int last = Integer.parseInt(pLast);
         int clipBoardNum = Integer.parseInt(pClipBoardNum);
 
+        if (clipBoardNum > 999){
+            System.out.println("Please don't be difficult");
+            return;
+        }
         LinkedList temp = new LinkedList();
         try { //trying to set temp to CB at loc and clearing it
             temp = clipBoards.get(clipBoardNum);
@@ -247,40 +345,40 @@ public class Mix implements IMix {
                 temp.add(message.get(i).getData());
             }
             clipBoards.add(temp);
-            System.out.println("Contents of CB "+ clipBoardNum + ": "
+            System.out.println("Contents of CB " + clipBoardNum + ": "
                     + clipBoards.get(clipBoardNum).display());
         }
     }
-    
+
     /*****************************************************************
      Save the array of proccessed commands to a file to be used in
      the unMix class
-     @param // TODO: 4/11/2016  
-     @throws 
-     @return 
+
+     @throws IOException
      *****************************************************************/
     public void save() {
         PrintWriter out = null;
         String encryptedFile = "encryptedFile.txt";
         try {
-            out = new PrintWriter(new BufferedWriter  // TODO: 4/11/2016 update execuded commands when executed 
+            out = new PrintWriter(new BufferedWriter
                     (new FileWriter(encryptedFile)));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < execudedCmds.size() ; i++) {
+        for (int i = 0; i < execudedCmds.size(); i++) {
             out.println(execudedCmds.get(i));
         }
-       out.close();
+        out.close();
     }
 
-
+    /*****************************************************************
+     Main method that creates the class object and calls mixture
+     @param args
+     @throws RuntimeException
+     @throws IOException
+     *****************************************************************/
     public static void main(String[] args) {
-
         Mix m = new Mix();
         m.mixture();
-
     }
-
-
 }
