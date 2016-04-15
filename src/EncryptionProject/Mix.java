@@ -48,6 +48,15 @@ public class Mix implements IMix {
 
     }
 
+    public Mix(String msg) {
+        message = new EncryptionProject.LinkedList();
+        setInitialMessage(msg);
+
+        scanner = new Scanner(System.in);
+        execudedCmds = new ArrayList<>();
+        clipBoards = new ArrayList<>();
+    }
+
     /*****************************************************************
      Implementation of setInitalMessage, sets the message to be mixed
      based on user input
@@ -242,6 +251,17 @@ public class Mix implements IMix {
      *****************************************************************/
     public String getMessage() {
         return message.display();
+    }
+
+    /*****************************************************************
+     Returns the unformatted message as a string. Used in various
+     methods to use message in an unformatted setting
+
+     @return message
+     @throws NullPointerException
+     *****************************************************************/
+    public LinkedList getMessageAsList() {
+        return message;
     }
 
     /*****************************************************************

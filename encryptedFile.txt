@@ -1,3 +1,9 @@
-a b 4
-a z 15
-a 5 4
+p :worl:6
+p :worl:6
+r e 27
+r e 2
+a j 8
+a f 10
+a s 4
+a v 1
+a : 9

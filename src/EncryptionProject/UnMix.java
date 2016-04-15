@@ -46,8 +46,8 @@ public class UnMix implements IUnMix {
      *****************************************************************/
     public void load() {
         String encryptedFile = "encryptedFile.txt";
-        Scanner inFS = null; //creating another Scanner
-        FileInputStream fileByteStream = null;
+        Scanner inFS; //creating another Scanner
+        FileInputStream fileByteStream;
         try { //attempting to find and read the file
             fileByteStream = new FileInputStream(encryptedFile);
             inFS = new Scanner(fileByteStream);
@@ -182,6 +182,7 @@ public class UnMix implements IUnMix {
      @throws RuntimeException
      *****************************************************************/
     public static void main(String[] args) {
+
         UnMix m = new UnMix();
         m.load(); //loads list of executed commands
         m.decrypt(); //front end

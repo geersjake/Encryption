@@ -2,6 +2,8 @@ package EncryptionProject;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 /*****************************************************************
  Junit4 test class to test the various methods of the Unmix class
 
@@ -12,7 +14,6 @@ public class UnMixTest extends UnMix {
 
     Mix mix;
     UnMix unMix;
-
 
     @org.junit.Before
     public void setUp() throws Exception {
@@ -28,27 +29,16 @@ public class UnMixTest extends UnMix {
     }
 
     @Test
-    /*****************************************************************
-     Tests that the orginal message matches the unMixed one
-     @param
-     @throws
-     @return
-     *****************************************************************/
     public void testUndoProcessCommand() throws Exception {
 
-
-        /*Mix message = new Mix();
-        message.setInitialMessage ("This is a secret message");
-        String userMessage = message.processCommand("a a 0");
-        message.processCommand("s testIt");
-
-        UnMix unMessage = new UnMix();
-        String original = unMessage.UnMixUsingFile ("testIt", userMessage);
-        assertEquals(original, "This is a secret message");*/
+        unMix.setMessage("zthis ishis a scrt");
+        unMix.load();
+        unMix.UnMixMessage(unMix.getExecutedCmds(), unMix.getMessage());
+        assertEquals("this is a secret", unMix.getMessage().display());
 
     }
 
- /*   @Test
+    @Test
     public void testUndoRemoveAtTailAndTop() throws Exception {
         mix.setInitialMessage("Abba");
         mix.processCommand("r a");
@@ -58,6 +48,34 @@ public class UnMixTest extends UnMix {
         unMix.load();
         unMix.UnMixMessage(unMix.getExecutedCmds(), unMix.getMessage());
 
-        assertEquals("Abba", );
-    }*/
+        assertEquals("Abba",unMix.getMessage().display() );
+    }
+
+    @Test
+    public void testDecodingMultiple2(){
+        Mix message = new Mix();
+        message.setInitialMessage("The world is on fire");
+        message.processCommand("r p");
+        message.processCommand("c 4 7 2");
+        message.processCommand("p 6 2");
+        message.processCommand("p 6 2");
+        message.processCommand("r e");
+        message.processCommand("a j 8");
+        message.processCommand("a f 10");
+        message.processCommand("a s 4");
+        message.processCommand("a v 1");
+        message.processCommand("a 1ss 3");
+        message.processCommand("a : 9");
+        message.processCommand("c 4 8 3");
+        message.processCommand("s");
+
+        String mixedMsg = message.getMessage();
+        System.out.println(mixedMsg);
+
+        unMix.load();
+        unMix.setMessage(mixedMsg);
+        unMix.UnMixMessage(unMix.getExecutedCmds(), unMix.getMessage());
+        assertEquals("The world is on fire",
+                unMix.getMessage().display());
+    }
 }

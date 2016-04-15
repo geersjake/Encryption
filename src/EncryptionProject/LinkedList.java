@@ -1,5 +1,7 @@
 package EncryptionProject;
 
+import java.util.Collection;
+
 /*****************************************************************
  Recreation of Java Linked List class. Can handle any element.
  JavaDoc is not thorough as it is not required
@@ -25,6 +27,17 @@ public class LinkedList<E> {
     public LinkedList() {
         top = null;
         tail = null;
+    }
+
+    public LinkedList(Collection<? extends E> c) {
+        this();
+        Object[] a = c.toArray();
+        for (Object o:
+             a) {
+            E e = (E) o;
+            add(e);
+        }
+
     }
 
     /*****************************************************************
